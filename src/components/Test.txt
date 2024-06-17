@@ -1,0 +1,307 @@
+import React, { useState, useEffect } from "react";
+
+function Test() {
+  const [correctWord] = useState("melonbonus");
+  const [tryWord] = useState("melonnanny");
+  const [matchIndices, setMatchIndices] = useState([]);
+  const [modifiedTryWord, setModifiedTryWord] = useState(tryWord);
+
+  useEffect(() => {
+    const lastFiveCorrect = correctWord.slice(-5); // "apple"
+    const lastFiveTry = tryWord.slice(-5); // "puppy"
+    let tempTryWord = tryWord; // Full tryWord copy for modifications
+    let newMatchIndices = [];
+    let tempLastFiveTry = lastFiveTry; // Temporary copy for modifications
+
+    Array.from(lastFiveCorrect).forEach((char, index) => {
+      const foundIndex = tempLastFiveTry.indexOf(char);
+      if (foundIndex !== -1) {
+        // Calculate the actual index in the full tryWord
+        const actualIndex = tryWord.length - 5 + foundIndex;
+        newMatchIndices.push(actualIndex);
+        // Replace the matched character in the full temporary tryWord with '0'
+        tempTryWord = tempTryWord.substr(0, actualIndex) + '0' + tempTryWord.substr(actualIndex + 1);
+        // Also replace the matched character in the temporary lastFiveTry to prevent duplicate matching
+        tempLastFiveTry = tempLastFiveTry.substr(0, foundIndex) + '0' + tempLastFiveTry.substr(foundIndex + 1);
+      }
+    });
+
+    setMatchIndices(newMatchIndices);
+    setModifiedTryWord(tempTryWord);
+  }, [correctWord, tryWord]);
+
+  return (
+    <div>
+      <p>Match Indices in Full Try Word: {matchIndices.join(', ')}</p>
+      <p>Modified Full Try Word: {modifiedTryWord}</p>
+    </div>
+  );
+}
+
+export default Test;
+
+import React, { useState, useEffect, useContext } from "react";
+import { ContextCreator } from "./ContextCreator";
+
+function LanguageSelector() {
+  const languages = [
+    "German",
+    "English",
+    "French",
+    "Italian",
+    "Spanish",
+    "Turkish",
+  ];
+  const { selectedLanguage1, setSelectedLanguage1 } =
+    useContext(ContextCreator);
+  const { selectedLanguage2, setSelectedLanguage2 } =
+    useContext(ContextCreator);
+  const { jsonString1, setJsonString1 } = useContext(ContextCreator);
+  const { jsonString2, setJsonString2 } = useContext(ContextCreator);
+  const { comparisson, setComparison } = useContext(ContextCreator);
+  const [remainingLanguages, setRemainingLanguages] = useState(languages);
+  const [words1, setWords1] = useState([]);
+  const [words2, setWords2] = useState([]);
+  const [randomWord1, setRandomWord1] = useState("");
+  const [randomWord2, setRandomWord2] = useState("");
+  const { chosenWord, setChosenWord } = useContext(ContextCreator);
+  const [updateCounter, setUpdateCounter] = useState(0); // Counter to track updates
+  const {resetLanguage1, setresetLanguage1}= useContext(ContextCreator);
+  const {resetLanguage2, setresetLanguage2}= useContext(ContextCreator);
+
+
+  useEffect(() => {
+    if (selectedLanguage1) {
+      loadWords1(selectedLanguage1.toLowerCase());
+    }
+  }, [selectedLanguage1]);
+
+  useEffect(() => {
+    if (words1.length > 0) {
+      getRandomWord1();
+    }
+  }, [words1]);
+
+  useEffect(() => {
+    if (selectedLanguage2) {
+      loadWords2(selectedLanguage2.toLowerCase());
+    }
+  }, [selectedLanguage2]);
+
+  useEffect(() => {
+    if (words2.length > 0) {
+      getRandomWord2();
+    }
+  }, [words2]);
+
+  useEffect(() => {
+    if (updateCounter >= 2) {
+      // Check if both words have been updated
+      getFinalWord();
+      setUpdateCounter(0); // Reset counter after choosing
+    }
+  }, [updateCounter]);
+
+  const handleChange1 = (event) => {
+    setSelectedLanguage1(event.target.value);
+    const filteredLanguages = languages.filter(
+      (rl) => rl !== event.target.value
+    );
+    setRemainingLanguages(filteredLanguages);
+    setresetLanguage1(event.target.value);
+  };
+
+  const handleChange2 = (event) => {
+    setSelectedLanguage2(event.target.value);
+    setresetLanguage2(event.target.value);
+  };
+
+  const loadWords1 = async (lang) => {
+    try {
+      const data1 = await import(`../data/${lang}.json`);
+      const filteredWords1 = filterWords(data1[lang]);
+      setWords1(filteredWords1);
+      const jsonObj1 = { [selectedLanguage1]: filteredWords1 };
+      setJsonString1(JSON.stringify(jsonObj1, null, 2));
+    } catch (error) {
+      console.error("Failed to load words data:", error);
+      setWords1([]);
+      setJsonString1("");
+    }
+  };
+
+  const loadWords2 = async (lang) => {
+    try {
+      const data2 = await import(`../data/${lang}.json`);
+      const filteredWords2 = filterWords(data2[lang]);
+      setWords2(filteredWords2);
+      const jsonObj2 = { [selectedLanguage2]: filteredWords2 };
+      setJsonString2(JSON.stringify(jsonObj2, null, 2));
+    } catch (error) {
+      console.error("Failed to load words data:", error);
+      setWords2([]);
+      setJsonString2("");
+    }
+  };
+
+  const getRandomWord1 = () => {
+    const randomWord = words1[Math.floor(Math.random() * words1.length)];
+    setRandomWord1(randomWord);
+    setUpdateCounter((prev) => prev + 1); // Increment counter
+  };
+
+  const getRandomWord2 = () => {
+    const randomWord = words2[Math.floor(Math.random() * words2.length)];
+    setRandomWord2(randomWord);
+    setUpdateCounter((prev) => prev + 1); // Increment counter
+  };
+
+  const getFinalWord = () => {
+    const wordChooserFlip = Math.floor(Math.random() * 2);
+    const chosenWord =
+      wordChooserFlip === 0
+        ? randomWord1.toUpperCase()
+        : randomWord2.toUpperCase();
+    setChosenWord(chosenWord);
+    setComparison([
+      chosenWord,
+      chosenWord,
+      chosenWord,
+      chosenWord,
+      chosenWord,
+      chosenWord,
+      chosenWord,
+    ]);
+  };
+
+  const filterWords = (wordsArray) => {
+    const regex = /^[a-z]+$/i; // Modified to be case insensitive
+    return wordsArray.filter((word) => regex.test(word));
+  };
+
+  return (
+    <div>
+      <select value={selectedLanguage1} onChange={handleChange1}>
+        <option value="">Select your language</option>
+        {languages.map((language) => (
+          <option key={language} value={language}>
+            {language}
+          </option>
+        ))}
+      </select>
+      {/*<p>Selected Language: {selectedLanguage1}</p>
+      <p>{randomWord1}</p>*/}
+
+      <select value={selectedLanguage2} onChange={handleChange2}>
+        <option value="">Select your language</option>
+        {remainingLanguages.map((language) => (
+          <option key={language} value={language}>
+            {language}
+          </option>
+        ))}
+      </select>
+      {/*<p>Selected Language: {selectedLanguage2}</p>
+      <p>{randomWord2}</p>*/}
+      {selectedLanguage1.length > 0 && selectedLanguage2.length > 0 ? (
+        <p>Let the Bordle begin ✅</p>
+      ) : null}
+      {/*<p>Chosen Word: {chosenWord}</p>*/}
+    </div>
+  );
+}
+
+export default LanguageSelector;
+code 2
+
+import React, { useContext, useState } from "react";
+import { ContextCreator } from "./ContextCreator";
+
+function WinLose() {
+  const {
+    correctWord,
+    entryLimit,
+    bordleList,
+    comparisson,
+    selectedLetters,
+    setSelectedLetters,
+    greenList,
+    setGreenList,
+    orangeList,
+    setOrangeList,
+    chosenWord,
+    setChosenWord,
+    gridList,
+    setGridList,
+    setCorrectWord,
+    setEntryLimit,
+    greyList,
+    setGreyList,
+    greyLetter,
+    setGreyLetter,
+    greenLetter,
+    setGreenLetter,
+    orangeLetter,
+    setOrangeLetter,
+    setOrangeLetters,
+    orangeLetters,
+    orangeLists,
+    setOrangeLists,
+    setBordleList,
+    setComparison,
+    selectedLanguage1,
+    setSelectedLanguage1,
+    selectedLanguage2,
+    setSelectedLanguage2,
+    setJsonString1,
+    setJsonString2,
+    resetLanguage1,
+    setresetLanguage1,
+    resetLanguage2,
+    setresetLanguage2,
+  } = useContext(ContextCreator);
+
+  const handleReset = () => {
+    setBordleList([]);
+    setGridList([]);
+    setEntryLimit(false);
+    setCorrectWord(false);
+    setSelectedLanguage1("");
+    setSelectedLanguage2("");
+    setSelectedLanguage1(`${resetLanguage1}`);
+    setSelectedLanguage2(`${resetLanguage2}`);
+    setJsonString1("");
+    setJsonString2("");
+    setComparison([]);
+    setChosenWord("");
+  };
+  const getEndScreen = () => {
+    // No game end condition met
+    if (!correctWord && !entryLimit) return null;
+
+    const endScreenClass = correctWord
+      ? "winMessage"
+      : entryLimit
+      ? "loseMessage"
+      : "";
+    const endScreenMessage = correctWord
+      ? "You Won! 😁"
+      : entryLimit
+      ? "You Lost! 😔"
+      : "";
+
+    return (
+      <div className="endScreen">
+        {<h1 className={endScreenClass}>{endScreenMessage}</h1>}
+        {
+          <button className="restartButton" onClick={handleReset}>
+            Play Again
+          </button>
+        }
+      </div>
+    );
+  };
+
+  return getEndScreen();
+}
+
+export default WinLose;
