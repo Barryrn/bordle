@@ -1,0 +1,191 @@
+body {
+  background: #121213;
+  color: white;
+  font-family: "Montserrat", sans-serif;
+}
+
+
+#header {
+  display: flex;
+  justify-content: center; /* Center horizontally */
+  margin: none; /* Remove margin from the header */
+  border: none;
+}
+.streak {
+  display: flex;
+  justify-content: center; /* Center content horizontally within the .streak element */
+  position: absolute; 
+  top: 100px;
+  left: 50%; /* Move to the center horizontally */
+  transform: translateX(-50%); /* Adjust position back by half its width */
+  color: #000000;
+  border-radius: 10px;
+  padding: 10px;
+  background-color: white;
+  margin: 0px;
+}
+
+.selectContainer{
+  top : 100px;
+  position: absolute;
+  font-size: 1.3em;
+}
+.rows-grid {
+  display: grid;
+  grid-template-rows: repeat(7, 1fr);
+  grid-template-columns: repeat(5, auto);
+  justify-content: center; /* Align grid content to center */
+  align-items: center; /* Center grid items vertically */
+  row-gap: 10px; /* Unified gap for both rows and columns */
+  column-gap: 15px;
+  padding: 100px; /* Padding instead of margin to control spacing inside the container */
+  width: 100%; /* Ensure the grid takes the full width of its parent */
+  max-width: 600px; /* Max width can be set to control the overall size */
+  margin: 0 auto; /* Center the grid horizontally */
+}
+@keyframes flipAndChangeColor {
+  0% {
+    transform: scaleY(1);
+  }
+
+  50% {
+    transform: scaleY(0);
+    background-color: white;
+  }
+
+  100% {
+    transform: scaleY(1);
+  }
+}
+.grid-item {
+  color: white;
+  font-weight: bolder;
+  font-size: x-large;
+  height: 55px; /* Consistent height */
+  width: 55px; /* Consistent width */
+  border: 1px solid #ccc; /* Visible border with lighter color */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #272729; /* Background color for items */
+  border-color: rgb(202, 202, 202); /* Explicit border color */
+}
+
+.item-green{
+  background-color: green;
+  animation: flipAndChangeColor 1s forwards; /* Animation runs only once and ends at the final state */
+}
+
+.item-orange{
+  background-color: orangered;
+  animation: flipAndChangeColor 1s forwards;
+}
+
+.item-grey{
+  background-color: rgb(99, 99, 99);
+  animation: flipAndChangeColor 1s forwards;
+}
+
+.Keyboard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 100px;
+}
+
+.Firstrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+.Secondrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+.Thirdrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+.letter {
+  margin-bottom: 15px;
+  width: max-content;
+  width: 65px;
+  color: black;
+  padding: 5px;
+  border: 1px solid black;
+  border-radius: 4px;
+  background-color: #ffffff;
+}
+.letterGreen{
+  background-color: green ;
+}
+
+.letterOrange{
+  background-color: orangered ;
+}
+
+.letterGrey{
+  background-color: rgb(99, 99, 99) ;
+}
+
+
+.endScreen {
+  position: fixed;
+  top: 40%;
+  right: 10%;
+  transform: translate(-50%, -50%);
+  background-color: white;
+  padding: 20px;
+  border-radius: 15px 50px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+
+
+.winMessage {
+  margin: 0;
+  font-size: 24px;
+  color: #4CAF50; /* A green color to signify winning */
+}
+
+.loseMessage {
+  margin: 0;
+  font-size: 24px;
+  color: #bf0d0d; /* A green color to signify winning */
+}
+.hideMessage {
+  display: none;
+}
+.restartButton {
+  font-size: 16px;
+  padding: 10px 20px;
+  cursor: pointer;
+  background-color: #f8f9fa;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  transition: background-color 0.3s ease;
+}
+
+.restartButton:hover {
+  background-color: #e2e6ea;
+}
+
+.messageBox{
+  position: fixed;
+  top: 20%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  color: #000000;
+}

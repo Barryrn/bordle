@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkbordle=self.webpackChunkbordle||[]).push([[830],{830:a=>{a.exports=JSON.parse('{"english":["awake","abate","zonal"],"german":["aalen","abart","abbau","abend","abgas","f\xf6rde","grind","fakir","r\xe4ude","sal\xe4r"]}')}}]);
