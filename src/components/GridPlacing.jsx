@@ -38,14 +38,19 @@ function GridPlacing() {
     currentStreak,
     setCurrentStreak,
   } = useContext(ContextCreator);
+
   const [modifiedTryWord, setModifiedTryWord] = useState("");
 
+  
+  // Calculate flat versions of the lists, joining nested arrays to single strings.
   const flatCharList = bordleList.flat().join("").split("");
   const flatComparisonList = comparisson.flat().join("").split("");
 
+  // Extract the last five characters of both lists to compare recent entries.
   const lastFiveCharList = flatCharList.slice(-5);
   const lastFiveComparisonList = flatComparisonList.slice(-5);
 
+  // Effect hook to manage green states (correct placements)
   useEffect(() => {
     let updatedGreenList = [];
     let updateGreenListLetter = [];
@@ -62,6 +67,8 @@ function GridPlacing() {
         lastFiveComparisonList[j] = "0";
       }
     }
+
+    // Update states with these new lists
     setModifiedTryWord(lastFiveComparisonList);
     setGreenList(updatedGreenList);
     setGreenLetter(updateGreenListLetter);
@@ -73,6 +80,7 @@ function GridPlacing() {
     gridList,
   ]);
 
+  
   useEffect(() => {
     if (gridList.length === 0) {
       setOrangeList([]);
@@ -221,7 +229,7 @@ function GridPlacing() {
   }, [correctWord, setCorrectWord]);
 
   useEffect(() => {
-    if (entryLimit) {
+    if (entryLimit === 35 && chosenWord != lastFiveCharList) {
       setCurrentStreak(0);
     }
   }, [entryLimit, setEntryLimit]);
@@ -233,9 +241,8 @@ function GridPlacing() {
       </div>
       <div className="rows-grid">{gridItems}</div>
       <div>
-        {/*
-        <h2>{chosenWord}</h2>
-        <p>{bordleList}</p>
+        {
+       /*<p>{bordleList}</p>
         <p>{modifiedTryWord}</p>
         <p>{greenLetter}</p>
         <p>{greenList}</p>
