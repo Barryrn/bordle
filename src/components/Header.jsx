@@ -1,16 +1,11 @@
 import React from "react";
 
-function Header(){
-    return(
-        <header>
-            <div id="header">
-                <h1>
-                Bordle
-                </h1>
-            </div>
-            <hr />
-        </header>
-    )
+function Header() {
+  return (
+    <header className="header">
+      <h1>Bordle</h1>
+    </header>
+  );
 }
 
-export default Header;
+export default React.memo(Header);

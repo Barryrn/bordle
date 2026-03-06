@@ -1,24 +1,23 @@
-import React from 'react';
-import { ContextProvider } from './ContextCreator';
-import Header from './Header';
-import LanguageSelector from './LanguageSelector';
-import Keywordentry from './Keyboard';
-import WordCheck from './WordCheck';
-import GridPlacing from './GridPlacing';
-import WinLose from './WinLose';
+import React from "react";
+import { GameProvider } from "../context/GameContext";
+import Header from "./Header";
+import LanguageSelector from "./LanguageSelector";
+import GameGrid from "./GameGrid";
+import VirtualKeyboard from "./VirtualKeyboard";
+import Toast from "./Toast";
+import GameEndModal from "./GameEndModal";
 
 function App() {
   return (
-    <ContextProvider>
+    <GameProvider>
       <Header />
       <LanguageSelector />
-      <GridPlacing />
-      <Keywordentry />
-      <WordCheck />
-      <WinLose />
-     
-    </ContextProvider>
+      <GameGrid />
+      <Toast />
+      <VirtualKeyboard />
+      <GameEndModal />
+    </GameProvider>
   );
-} 
- 
+}
+
 export default App;

@@ -1,179 +1,133 @@
-// LanguageSelector.js
-import React, { useState, useEffect, useContext } from "react";
-import { ContextCreator } from "./ContextCreator";
+import React, { useState, useEffect } from "react";
+import { useGame } from "../context/GameContext";
+import useWordLoader from "../hooks/useWordLoader";
+
+const LANGUAGES = ["German", "English", "French", "Italian", "Spanish", "Turkish"];
 
 function LanguageSelector() {
-  const languages = [
-    "German",
-    "English",
-    "French",
-    "Italian",
-    "Spanish",
-    "Turkish",
-  ];
-  const { selectedLanguage1, setSelectedLanguage1 } =
-    useContext(ContextCreator);
-  const { selectedLanguage2, setSelectedLanguage2 } =
-    useContext(ContextCreator);
-  const { jsonString1, setJsonString1 } = useContext(ContextCreator);
-  const { jsonString2, setJsonString2 } = useContext(ContextCreator);
-  const { comparisson, setComparison } = useContext(ContextCreator);
-  const [remainingLanguages, setRemainingLanguages] = useState(languages);
+  const { state, dispatch } = useGame();
+  const { loadWordList, pickRandomWord } = useWordLoader();
+
+  const [lang1, setLang1] = useState("");
+  const [lang2, setLang2] = useState("");
   const [words1, setWords1] = useState([]);
   const [words2, setWords2] = useState([]);
-  const [randomWord1, setRandomWord1] = useState("");
-  const [randomWord2, setRandomWord2] = useState("");
-  const { chosenWord, setChosenWord } = useContext(ContextCreator);
-  const [updateCounter, setUpdateCounter] = useState(0); // Counter to track updates
-  const { resetLanguage1, setresetLanguage1 } = useContext(ContextCreator);
-  const { resetLanguage2, setresetLanguage2 } = useContext(ContextCreator);
+  const [loading, setLoading] = useState(false);
 
+  const remainingLanguages = LANGUAGES.filter((l) => l !== lang1);
+  const bothSelected = lang1 && lang2;
+
+  // Load words when language 1 changes
   useEffect(() => {
-    if (selectedLanguage1) {
-      loadWords1(selectedLanguage1.toLowerCase());
-    }
-  }, [selectedLanguage1]);
+    if (!lang1) return;
+    setLoading(true);
+    loadWordList(lang1).then((words) => {
+      setWords1(words);
+      setLoading(false);
+    });
+  }, [lang1, loadWordList]);
 
+  // Load words when language 2 changes
   useEffect(() => {
-    if (words1.length > 0) {
-      getRandomWord1();
-    }
-  }, [words1]);
+    if (!lang2) return;
+    setLoading(true);
+    loadWordList(lang2).then((words) => {
+      setWords2(words);
+      setLoading(false);
+    });
+  }, [lang2, loadWordList]);
 
+  // Start game when both word lists are loaded
   useEffect(() => {
-    if (selectedLanguage2) {
-      loadWords2(selectedLanguage2.toLowerCase());
+    if (words1.length > 0 && words2.length > 0 && bothSelected) {
+      dispatch({ type: "SET_LANGUAGES", lang1, lang2 });
+      dispatch({ type: "SET_WORD_LISTS", list1: words1, list2: words2 });
+      const word = pickRandomWord(words1, words2);
+      dispatch({ type: "SET_CHOSEN_WORD", word });
     }
-  }, [selectedLanguage2]);
+  }, [words1, words2, bothSelected, lang1, lang2, dispatch, pickRandomWord]);
 
+  // Reset when game resets
   useEffect(() => {
-    if (words2.length > 0) {
-      getRandomWord2();
+    if (state.gameStatus === "idle" && state.chosenWord === "") {
+      if (state.languages.lang1 && state.languages.lang2) {
+        // Game was reset -- reload with same languages
+        setLang1("");
+        setLang2("");
+        setWords1([]);
+        setWords2([]);
+        setTimeout(() => {
+          setLang1(state.languages.lang1);
+          setLang2(state.languages.lang2);
+        }, 0);
+      }
     }
-  }, [words2]);
+  }, [state.gameStatus, state.chosenWord, state.languages]);
 
-  useEffect(() => {
-    if (updateCounter >= 2) {
-      // Check if both words have been updated
-      getFinalWord();
-      setUpdateCounter(0); // Reset counter after choosing
-    }
-  }, [updateCounter]);
-
-  const handleChange1 = (event) => {
-    const newLanguage = event.target.value;
-    setSelectedLanguage1("");
-    setTimeout(() => {
-      setSelectedLanguage1(newLanguage);
-      const filteredLanguages = languages.filter((rl) => rl !== newLanguage);
-      setRemainingLanguages(filteredLanguages);
-      setresetLanguage1(newLanguage);
-    }, 0);
-  };
-
-  const handleChange2 = (event) => {
-    const newLanguage = event.target.value;
-    setSelectedLanguage2("");
-    setTimeout(() => {
-      setSelectedLanguage2(newLanguage);
-      setresetLanguage2(newLanguage);
-    }, 0);
-  };
-
-  const loadWords1 = async (lang) => {
-    try {
-      const data1 = await import(`../data/${lang}.json`);
-      const filteredWords1 = filterWords(data1[lang]);
-      setWords1(filteredWords1);
-      const jsonObj1 = { [selectedLanguage1]: filteredWords1 };
-      setJsonString1(JSON.stringify(jsonObj1, null, 2));
-    } catch (error) {
-      console.error("Failed to load words data:", error);
-      setWords1([]);
-      setJsonString1("");
-    }
-  };
-
-  const loadWords2 = async (lang) => {
-    try {
-      const data2 = await import(`../data/${lang}.json`);
-      const filteredWords2 = filterWords(data2[lang]);
-      setWords2(filteredWords2);
-      const jsonObj2 = { [selectedLanguage2]: filteredWords2 };
-      setJsonString2(JSON.stringify(jsonObj2, null, 2));
-    } catch (error) {
-      console.error("Failed to load words data:", error);
+  const handleChange1 = (e) => {
+    const newLang = e.target.value;
+    setLang1(newLang);
+    setWords1([]);
+    if (newLang === lang2) {
+      setLang2("");
       setWords2([]);
-      setJsonString2("");
     }
   };
 
-  const getRandomWord1 = () => {
-    const randomWord = words1[Math.floor(Math.random() * words1.length)];
-    setRandomWord1(randomWord);
-    setUpdateCounter((prev) => prev + 1); // Increment counter
+  const handleChange2 = (e) => {
+    setLang2(e.target.value);
+    setWords2([]);
   };
 
-  const getRandomWord2 = () => {
-    const randomWord = words2[Math.floor(Math.random() * words2.length)];
-    setRandomWord2(randomWord);
-    setUpdateCounter((prev) => prev + 1); // Increment counter
-  };
-
-  const getFinalWord = () => {
-    const wordChooserFlip = Math.floor(Math.random() * 2);
-    const chosenWord =
-      wordChooserFlip === 0
-        ? randomWord1.toUpperCase()
-        : randomWord2.toUpperCase();
-    setChosenWord(chosenWord);
-    setComparison([
-      chosenWord,
-      chosenWord,
-      chosenWord,
-      chosenWord,
-      chosenWord,
-      chosenWord,
-      chosenWord,
-    ]);
-  };
-
-  const filterWords = (wordsArray) => {
-    const regex = /^[a-z]+$/i; // Modified to be case insensitive
-    return wordsArray.filter((word) => regex.test(word));
-  };
+  // Hide selector once game is playing
+  if (state.gameStatus === "playing" || state.gameStatus === "won" || state.gameStatus === "lost") {
+    return null;
+  }
 
   return (
-    <div>
-      <div className="selectContainer">
-        <select value={selectedLanguage1} onChange={handleChange1}>
-          <option value="">Select your language</option>
-          {languages.map((language) => (
+    <div className="language-selector">
+      <div className="language-selector-group">
+        <label htmlFor="lang-select-1" className="sr-only">
+          First language
+        </label>
+        <select
+          id="lang-select-1"
+          value={lang1}
+          onChange={handleChange1}
+          aria-label="Select first language"
+        >
+          <option value="">Select language 1</option>
+          {LANGUAGES.map((language) => (
             <option key={language} value={language}>
               {language}
             </option>
           ))}
         </select>
-        {/*<p>Selected Language: {selectedLanguage1}</p>
-      <p>{randomWord1}</p>*/}
-        <br />
-        <select value={selectedLanguage2} onChange={handleChange2}>
-          <option h1 value="">
-            Select your language
-          </option>
+      </div>
+
+      <div className="language-selector-group">
+        <label htmlFor="lang-select-2" className="sr-only">
+          Second language
+        </label>
+        <select
+          id="lang-select-2"
+          value={lang2}
+          onChange={handleChange2}
+          aria-label="Select second language"
+        >
+          <option value="">Select language 2</option>
           {remainingLanguages.map((language) => (
             <option key={language} value={language}>
               {language}
             </option>
           ))}
         </select>
-        {/*<p>Selected Language: {selectedLanguage2}</p>
-      <p>{randomWord2}</p>*/}
-        {selectedLanguage1.length > 0 && selectedLanguage2.length > 0 ? (
-          <p>Let the Bordle begin ✅</p>
-        ) : null}
-        {/*<p>Chosen Word: {chosenWord}</p>*/}
       </div>
+
+      {loading && <p className="loading-text">Loading words...</p>}
+      {bothSelected && !loading && (
+        <p className="ready-text">Let the Bordle begin!</p>
+      )}
     </div>
   );
 }

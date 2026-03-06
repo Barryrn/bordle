@@ -1,0 +1,68 @@
+/* Keyboard */
+.keyboard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--key-gap);
+  width: 100%;
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 12px 8px 16px;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+}
+
+.keyboard-row {
+  display: flex;
+  gap: var(--key-gap);
+  width: 100%;
+  justify-content: center;
+}
+
+.key {
+  height: var(--key-height);
+  min-width: var(--key-width);
+  flex: 1;
+  max-width: 43px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: var(--border-radius-sm);
+  background-color: var(--color-key-bg);
+  color: var(--color-key-text);
+  font-family: var(--font-family);
+  font-size: var(--font-size-key);
+  font-weight: 700;
+  text-transform: uppercase;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color var(--transition-fast), transform var(--transition-fast);
+}
+
+.key:active {
+  transform: scale(0.95);
+}
+
+.key:focus-visible {
+  outline: 2px solid var(--color-text);
+  outline-offset: 2px;
+}
+
+.key--wide {
+  flex: 1.5;
+  max-width: 65px;
+  font-size: 0.75rem;
+}
+
+.key-correct {
+  background-color: var(--color-correct);
+}
+
+.key-present {
+  background-color: var(--color-present);
+}
+
+.key-absent {
+  background-color: var(--color-absent);
+}
